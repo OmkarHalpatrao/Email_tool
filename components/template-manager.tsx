@@ -22,20 +22,15 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-
-interface Template {
-  id: string
-  name: string
-  subject: string
-  body: string
-}
+import type { Template } from "./email-referral-tool"
 
 interface TemplateManagerProps {
-  template?: Template
+  template?: Template | null
   onSave: (template: Template) => void
+  isEditing?: boolean
 }
 
-export default function TemplateManager({ template, onSave }: TemplateManagerProps) {
+export default function TemplateManager({ template, onSave, isEditing = false }: TemplateManagerProps) {
   const [templateName, setTemplateName] = useState(template?.name || "")
   const [subject, setSubject] = useState(template?.subject || "")
   const [linkUrl, setLinkUrl] = useState("")
@@ -52,9 +47,20 @@ export default function TemplateManager({ template, onSave }: TemplateManagerPro
     content: template?.body || "<p>Enter your template content here...</p>",
   })
 
+  // Update form when template changes
   useEffect(() => {
-    if (template && editor) {
-      editor.commands.setContent(template.body)
+    if (template) {
+      setTemplateName(template.name)
+      setSubject(template.subject)
+      if (editor) {
+        editor.commands.setContent(template.body)
+      }
+    } else {
+      setTemplateName("")
+      setSubject("")
+      if (editor) {
+        editor.commands.setContent("<p>Enter your template content here...</p>")
+      }
     }
   }, [template, editor])
 
@@ -84,8 +90,8 @@ export default function TemplateManager({ template, onSave }: TemplateManagerPro
     try {
       setIsSaving(true)
 
-      const method = template ? "PUT" : "POST"
-      const url = template ? `/api/templates/${template.id}` : "/api/templates"
+      const method = isEditing ? "PUT" : "POST"
+      const url = isEditing && template ? `/api/templates/${template.id}` : "/api/templates"
 
       const response = await fetch(url, {
         method,
@@ -105,14 +111,7 @@ export default function TemplateManager({ template, onSave }: TemplateManagerPro
 
       const savedTemplate = await response.json()
 
-      toast.success(template ? "Template updated successfully" : "Template created successfully")
-
-      if (!template) {
-        // Reset form only for new templates
-        setTemplateName("")
-        setSubject("")
-        editor.commands.setContent("<p>Enter your template content here...</p>")
-      }
+      toast.success(isEditing ? "Template updated successfully" : "Template created successfully")
 
       onSave(savedTemplate)
     } catch (error) {
@@ -129,9 +128,7 @@ export default function TemplateManager({ template, onSave }: TemplateManagerPro
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold">
-        {template ? "Edit Template" : "Create Template"}
-      </h2>
+      <h2 className="text-xl font-bold">{isEditing ? "Edit Template" : "Create Template"}</h2>
 
       <div className="space-y-4">
         <div className="space-y-2">
@@ -159,21 +156,30 @@ export default function TemplateManager({ template, onSave }: TemplateManagerPro
           <div className="border rounded-md overflow-hidden">
             <div className="flex flex-wrap gap-1 p-2 bg-gray-50 border-b">
               {/* Toolbar buttons */}
-              <Button type="button" size="icon" variant="ghost"
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
                 onClick={() => editor.chain().focus().toggleBold().run()}
                 className={editor.isActive("bold") ? "bg-gray-200" : ""}
               >
                 <Bold className="h-4 w-4" />
               </Button>
 
-              <Button type="button" size="icon" variant="ghost"
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
                 onClick={() => editor.chain().focus().toggleItalic().run()}
                 className={editor.isActive("italic") ? "bg-gray-200" : ""}
               >
                 <Italic className="h-4 w-4" />
               </Button>
 
-              <Button type="button" size="icon" variant="ghost"
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
                 onClick={() => editor.chain().focus().toggleUnderline().run()}
                 className={editor.isActive("underline") ? "bg-gray-200" : ""}
               >
@@ -182,7 +188,10 @@ export default function TemplateManager({ template, onSave }: TemplateManagerPro
 
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button type="button" size="icon" variant="ghost"
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
                     className={editor.isActive("link") ? "bg-gray-200" : ""}
                   >
                     <LinkIcon className="h-4 w-4" />
@@ -209,21 +218,30 @@ export default function TemplateManager({ template, onSave }: TemplateManagerPro
               <div className="w-px h-6 bg-gray-300 mx-1" />
 
               {/* Alignment + List */}
-              <Button type="button" size="icon" variant="ghost"
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
                 onClick={() => editor.chain().focus().setTextAlign("left").run()}
                 className={editor.isActive({ textAlign: "left" }) ? "bg-gray-200" : ""}
               >
                 <AlignLeft className="h-4 w-4" />
               </Button>
 
-              <Button type="button" size="icon" variant="ghost"
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
                 onClick={() => editor.chain().focus().setTextAlign("center").run()}
                 className={editor.isActive({ textAlign: "center" }) ? "bg-gray-200" : ""}
               >
                 <AlignCenter className="h-4 w-4" />
               </Button>
 
-              <Button type="button" size="icon" variant="ghost"
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
                 onClick={() => editor.chain().focus().setTextAlign("right").run()}
                 className={editor.isActive({ textAlign: "right" }) ? "bg-gray-200" : ""}
               >
@@ -232,14 +250,20 @@ export default function TemplateManager({ template, onSave }: TemplateManagerPro
 
               <div className="w-px h-6 bg-gray-300 mx-1" />
 
-              <Button type="button" size="icon" variant="ghost"
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
                 onClick={() => editor.chain().focus().toggleBulletList().run()}
                 className={editor.isActive("bulletList") ? "bg-gray-200" : ""}
               >
                 <List className="h-4 w-4" />
               </Button>
 
-              <Button type="button" size="icon" variant="ghost"
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
                 onClick={() => editor.chain().focus().toggleOrderedList().run()}
                 className={editor.isActive("orderedList") ? "bg-gray-200" : ""}
               >
@@ -251,7 +275,9 @@ export default function TemplateManager({ template, onSave }: TemplateManagerPro
           </div>
 
           <div className="text-sm text-gray-500 mt-2">
-            <p>Use placeholders like {"{HRname}"}, {"{role}"}, {"{company}"} in your template.</p>
+            <p>
+              Use placeholders like {"{HRname}"}, {"{role}"}, {"{company}"} in your template.
+            </p>
           </div>
         </div>
 
@@ -259,10 +285,12 @@ export default function TemplateManager({ template, onSave }: TemplateManagerPro
           {isSaving ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
+              {isEditing ? "Updating..." : "Saving..."}
             </>
+          ) : isEditing ? (
+            "Update Template"
           ) : (
-            template ? "Update Template" : "Save Template"
+            "Save Template"
           )}
         </Button>
       </div>

@@ -60,7 +60,7 @@ export default function EmailPreview({
 
       <div className="flex flex-col sm:flex-row gap-3">
         <Button variant="outline" onClick={onBackToEdit} className="flex-1">
-          Edit in Editor
+          Back to Edit
         </Button>
         <Button onClick={onSend} disabled={isSending} className="flex-1">
           {isSending ? (

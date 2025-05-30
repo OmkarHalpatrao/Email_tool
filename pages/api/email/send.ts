@@ -50,7 +50,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     
     const mailOptions: nodemailer.SendMailOptions = {
-      from: process.env.SMTP_SENDER,
+      from: process.env.SMTP_HOST,
       to: recipient,
       subject,
       html: content,

@@ -1,13 +1,13 @@
+import type { NextApiRequest, NextApiResponse } from "next"
 import { connectDB } from "@/utils/db"
 import Template from "@/models/Template"
-import type { NextApiRequest, NextApiResponse } from "next"
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await connectDB()
 
   if (req.method === "GET") {
     try {
-      const templates = await Template.find({})
+      const templates = await Template.find({}).sort({ updatedAt: -1 })
       return res.status(200).json(templates)
     } catch (err) {
       console.error("Error fetching templates:", err)
