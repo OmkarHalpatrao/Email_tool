@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next"
 import nodemailer from "nodemailer"
 import formidable from "formidable"
-import { Crimson_Text } from "next/font/google"
+// import { Crimson_Text } from "next/font/google"
 
 export const config = {
   api: {
